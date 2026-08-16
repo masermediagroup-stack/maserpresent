@@ -4,7 +4,7 @@ Phase-by-phase checklist. **Phase 0 is done in this repo** (2026-08-16). Phases 
 
 Work phase by phase. At the end of each implementation phase: lint, typecheck, tests, production build, desktop and mobile of the primary flow, files changed, decisions, limitations, AC confirmation — then stop.
 
-Full original prompt context is retained: Phase 1 foundation → 2 Supabase/auth → 3 clients/projects → 4 assets → 5 story/slides → 6 deck renderer → 7 share/publish → 8 studio settings (reduced) → 9 launch. Product cuts from maser-lab PR #53 still apply. Client chrome is the Figma deck (ADR 0003).
+Full original prompt context is retained: Phase 1 foundation → 2 Supabase/auth → 3 clients/projects → 4 assets → 5 story/slides → 6 deck renderer → 7 private slug + publish → 8 Work listing (on maser-media) and studio settings → 9 launch. PR #53 cuts still apply except Work listing of **published** CMS projects (ADR 0004). Client chrome is the Figma deck (ADR 0003).
 
 ## Phase 0 — Repository audit and decision record
 
@@ -16,6 +16,7 @@ Full original prompt context is retained: Phase 1 foundation → 2 Supabase/auth
 - [x] Lock foundation: [0001-foundation.md](./decisions/0001-foundation.md)
 - [x] Lock name: [0002-product-name.md](./decisions/0002-product-name.md)
 - [x] Lock client deck chrome: [0003-presentation-chrome.md](./decisions/0003-presentation-chrome.md), [presentation-ux.md](./presentation-ux.md)
+- [x] Lock hosting: [0004-hosting-and-visibility.md](./decisions/0004-hosting-and-visibility.md) (private `/p/[slug]` → public `/work/[slug]`)
 - [x] Write [product-brief.md](./product-brief.md), [architecture.md](./architecture.md)
 - [x] Copy curated skills; flatten docs to repo root
 - [x] No feature implementation; no Next.js scaffold
@@ -23,7 +24,7 @@ Full original prompt context is retained: Phase 1 foundation → 2 Supabase/auth
 **Acceptance**
 
 - [x] Audit is evidence-based (this repo + PR #53 + Figma node `1:2`)
-- [x] Architecture covers studio, private presentation, unlisted `/p/[slug]`, database (including `slides`), storage, renderer, testing
+- [x] Architecture covers studio, private `/p/[slug]`, public `/work/[slug]`, database (including `slides`), storage, renderer, testing
 - [x] Open decisions and spec exceptions are explicit
 - [x] No feature implementation started
 
@@ -110,7 +111,7 @@ Full original prompt context is retained: Phase 1 foundation → 2 Supabase/auth
 
 **Status: pending**
 
-- [ ] Shared renderer: preview, `/present`, and (API-ready) `/p/[slug]`
+- [ ] Shared renderer: preview, optional `/present`, masermedia.co `/p/[slug]` and `/work/[slug]`
 - [ ] Deck chrome per [presentation-ux.md](./presentation-ux.md): prev/next visibility, swipe, keyboard, tab jump to chapter slide 1
 - [ ] Active tab = darker background; hover = label underline; focus-visible ring
 - [ ] Editorial / Immersive / Systematic **per slide**
@@ -124,29 +125,30 @@ Full original prompt context is retained: Phase 1 foundation → 2 Supabase/auth
 
 **Status: pending**
 
-- [ ] Share links: label, expiry, optional passcode (hashed), downloads toggle, revoke, regenerate
-- [ ] `/present/[token]` and `/present/[token]/assets` on **this host only**
+- [ ] Studio Sharing: copy private `https://masermedia.co/p/[slug]`, optional passcode (hashed), downloads toggle
+- [ ] Optional extra-secret `/present/[token]` on **this host only** (not the client destination)
 - [ ] Individual signed downloads; **no ZIP**
-- [ ] Publish/unpublish: required metadata, hero, alt text; unpublish 404s `/p/[slug]`
-- [ ] Live rows (no snapshot)
-- [ ] Event log: publish, unpublish, share create/revoke, download, destructive asset
-- [ ] Document maser-media `/p/[slug]` contract; implement that route in a **maser-media PR** (may ship in this phase or immediately after)
-- [ ] Unlisted pages: default `noindex`; no sitemap of drafts
+- [ ] Status: `draft` (studio only) → `review` (private `/p/[slug]`) → `published` (public `/work/[slug]`, listed on Work)
+- [ ] Flip back to `review` to remove from Work; live rows (no snapshot)
+- [ ] Event log: review share, publish, unpublish, download, destructive asset
+- [ ] Document maser-media contract: `/p/[slug]`, `/work/[slug]`, Work index; implement in a **maser-media PR**
+- [ ] Review pages: `noindex`; published Work pages may be indexed; no sitemap of drafts
 
-**Note:** Until the maser-media PR lands, copied `/p/[slug]` URLs 404 on production. Call that out in the studio UI if the route is not live.
+**Note:** Until the maser-media PR lands, copied URLs 404 on production. Call that out in the studio UI.
 
 ---
 
 ## Phase 8 — Work index, conversion, and studio settings
 
-**Status: pending (reduced)**
+**Status: pending**
 
-Original spec’s `/work` index, home, About, Contact, and inquiries are **out**. This phase is studio settings plus leftover chrome:
+Work **index and public `/work/[slug]`** are maser-media work (same later PR as Phase 7). This repo supplies status + renderer. This phase in **this** repo:
 
 - [ ] Studio settings: name, mark, accent, contact details for studio chrome, default presentation mode
+- [ ] Sharing UI: private slug vs public Work URL, current status
 - [ ] Graceful defaults if settings are empty
-- [ ] Optional: copy-unlisted-URL control and “live on masermedia.co/p/…” status
-- [ ] Do **not** build Maserpresent `/`, `/work`, `/about`, `/contact`, or inquiries
+- [ ] Do **not** build a Maserpresent marketing `/`, `/about`, `/contact`, or inquiry admin
+- [ ] Coordinate maser-media: `/work` lists published CMS projects alongside Helm / Main Street file routes
 
 ---
 
@@ -155,7 +157,7 @@ Original spec’s `/work` index, home, About, Contact, and inquiries are **out**
 **Status: pending**
 
 - [ ] Full test suite, typecheck, lint, production build
-- [ ] Playwright: sign-in, project create, upload stub, story edit, preview, share-link, **tab jump**, **next/prev**, publish, unpublish 404, present access
+- [ ] Playwright: sign-in, project create, upload stub, story edit, preview, review private slug, publish to Work, tab jump, next/prev
 - [ ] Authz tests including forged IDs and revoked links
 - [ ] A11y, reduced motion, media controls, 360/768/1440, tab overflow
 - [ ] Media-heavy pass on LCP/INP/CLS (current + next slide)
@@ -169,9 +171,8 @@ Original spec’s `/work` index, home, About, Contact, and inquiries are **out**
 
 - Rate limits (magic link, passcode)
 - ZIP bundles
-- Inquiries / conversion on this app
+- Inquiries / conversion forms inside this app
 - Published snapshots / rollback
-- Listing Maserpresent projects on masermedia.co `/work`
 - Custom studio domain
 - Long-scroll article viewer as an alternate mode
 - Inline comments, DAM, AI copy, PDF, multi-studio, realtime collab, Figma/Drive sync, arbitrary CSS
@@ -179,4 +180,4 @@ Original spec’s `/work` index, home, About, Contact, and inquiries are **out**
 
 ## Definition of done (reminder)
 
-See [product-brief.md](./product-brief.md). MVP is authoring + private deck review + unlisted live publish on masermedia.co `/p/[slug]`, not a replacement marketing site.
+See [product-brief.md](./product-brief.md). MVP is studio authoring + private masermedia.co `/p/[slug]` for the client team + public `/work/[slug]` after approval.

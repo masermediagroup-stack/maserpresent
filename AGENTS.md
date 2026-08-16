@@ -1,6 +1,6 @@
 # Maserpresent — Agent instructions
 
-**Maserpresent** is Maser Media’s case-study and brand-identity CMS: studio authoring, private client review, unlisted publish onto masermedia.co.
+**Maserpresent** is Maser Media’s case-study and brand-identity CMS: studio authoring here; private client slug and public Work pages on masermedia.co.
 
 This is not maser-lab. Do not scaffold lab demos, dither engines, or a second app inside a lab.
 
@@ -12,6 +12,7 @@ This is not maser-lab. Do not scaffold lab demos, dither engines, or a second ap
 - `docs/decisions/0001-foundation.md`
 - `docs/decisions/0002-product-name.md`
 - `docs/decisions/0003-presentation-chrome.md`
+- `docs/decisions/0004-hosting-and-visibility.md`
 - `docs/build-status.md`
 
 Work **one phase at a time**. Stop for approval after each phase. Phase 0 is done. Phase 1 is the first code phase.
@@ -36,9 +37,10 @@ Do **not** use Convex, Firebase, or Hugging Face skills. Backend is Supabase.
 
 ## Hosts
 
-- Studio + `/present/[token]`: this app (`studioOrigin`, Vercel URL in MVP)
-- Published unlisted: `https://masermedia.co/p/[slug]` (maser-media, later PR)
-- Do not build Maserpresent `/`, `/work`, `/about`, `/contact`
+- Studio + preview: this app (`studioOrigin`, Vercel URL in MVP)
+- Client private: `https://masermedia.co/p/[slug]` (`status = review`)
+- Client public: `https://masermedia.co/work/[slug]`, listed on `/work` (`status = published`)
+- Do not build a Maserpresent marketing `/`, `/about`, or `/contact`
 
 ## Product name
 

@@ -12,12 +12,12 @@ Enable a small creative studio (Maser Media) to turn project strategy, process, 
 
 Secondary jobs:
 
-- Give clients one trustworthy destination for reviewing a presentation and downloading approved assets.
-- Publish an unlisted URL on [masermedia.co](https://masermedia.co) when the studio is ready to share a project outside a review link.
+- Give a client team a private [masermedia.co](https://masermedia.co) slug to review the deck and download approved assets.
+- After approval, make that presentation public on the Work section of masermedia.co.
 - Preserve enough visual freedom that each project can feel like its own brand.
 - Keep authoring fast enough that the team will actually maintain it.
 
-This is not a generic page builder, DAM replacement, social network, or marketing landing-page generator. It is not the Maser Media marketing site. It is a focused authoring, private review, and unlisted publishing system.
+This is not a generic page builder, DAM replacement, social network, or marketing landing-page generator. It is not a replacement for the Maser Media marketing site. It is the authoring backend and deck renderer that **feeds** masermedia.co.
 
 ## Audiences and roles
 
@@ -31,13 +31,13 @@ Creates and edits clients, projects, chapters, slides, blocks, assets, preview l
 
 ### Client viewer
 
-Opens a private Maserpresent link, moves through a **slide deck** (arrows, swipe, bottom section tabs), and downloads assets explicitly made available to them. No account. Access is a revocable token plus an optional passcode.
+Opens a **private slug** on masermedia.co (`/p/[slug]`) while the project is in review. Moves through the slide deck (arrows, swipe, bottom section tabs) and downloads assets explicitly made available to them. No account. Optional passcode. Studio edits during review show on that slug.
 
-### Unlisted visitor
+### Public visitor
 
-Opens `https://masermedia.co/p/[slug]` for a **published** project. They see the same deck renderer. They are not promised a work index, related-work rail, or inquiry form in MVP. If the project is not `published`, this URL 404s.
+Opens a **published** project from the Work index or `https://masermedia.co/work/[slug]`. Same deck renderer. If the project is not `published`, that Work URL 404s.
 
-The original “public visitor / prospect conversion” audience is served by the existing [maser-media](https://github.com/masermediagroup-stack/maser-media) site (`/`, `/work`, `/about`, `/contact`). Maserpresent does not replace that site.
+Inquiry / contact remains the existing masermedia.co contact flow. This app does not own `/about` or `/contact`.
 
 ## Core principles
 
@@ -69,17 +69,17 @@ Client chrome is a **deck**, not a long-scroll article. See [presentation-ux.md]
 
 ### Internal authoring
 
-Sign in (magic link) → dashboard → create or choose client → create project → enter overview → select presentation theme → add chapters (bottom tabs) → add/reorder slides and content blocks → upload and organize assets → preview desktop/mobile deck → create private review link → publish (unlisted `/p/[slug]` on masermedia.co) → copy that URL.
+Sign in (magic link) → dashboard → create or choose client → create project → enter overview → select presentation theme → add chapters (bottom tabs) → add/reorder slides and content blocks → upload and organize assets → preview desktop/mobile deck in studio → set status to **review** and copy `https://masermedia.co/p/[slug]` for the client → revise while they review (live on that private slug) → after approval, set status to **published** → the piece appears on Work at `https://masermedia.co/work/[slug]`.
 
-### Client presentation
+### Client presentation (private)
 
-Open `https://<studioOrigin>/present/[token]` → optional passcode → see the first slide (work on a white stage; **next** arrow only) → advance with arrows, swipe, or keyboard → use bottom tabs to jump to the first slide of a section (active tab = darker background; hover = label underline) → open approved asset library → filter by type → inspect usage notes → download individual approved files.
+Open `https://masermedia.co/p/[slug]` → optional passcode → first slide (work on a white stage; **next** arrow only) → advance with arrows, swipe, or keyboard → bottom tabs jump to the first slide of a section (active tab = darker background; hover = label underline) → approved asset library → download individual approved files.
 
-### Unlisted published read
+### Public Work read
 
-Open `https://masermedia.co/p/[slug]` → same deck if `published` → 404 if not published.
+Open `https://masermedia.co/work` or `https://masermedia.co/work/[slug]` → same deck if `published`. `/p/[slug]` redirects here after publish.
 
-Prospect conversion (work index → related work → inquiry) is **out of Maserpresent MVP**. It remains on masermedia.co as it exists today.
+See [0004-hosting-and-visibility.md](./decisions/0004-hosting-and-visibility.md).
 
 ## Information architecture
 
@@ -104,22 +104,25 @@ Prospect conversion (work index → related work → inquiry) is **out of Maserp
 
 Project editor: stable left rail (Overview, Story, Assets, Sharing, Settings). Save status and Preview in the top bar. Avoid card-heavy dashboard composition.
 
-### masermedia.co (existing site; thin route added later)
+### masermedia.co (existing site; thin routes added later)
 
 ```text
-/p/[slug]                      # unlisted published Maserpresent project
+/p/[slug]                      # private client slug while status = review
+/work                          # public index; includes published Maserpresent projects
+/work/[slug]                   # public canonical URL when status = published
 ```
 
-Existing routes stay as they are: `/`, `/work`, `/work/helm-in-house-saas`, `/work/main-street-pub-grub`, `/about`, `/contact`. Do not migrate those case pages into Maserpresent.
+Existing file-route work stays: `/work/helm-in-house-saas`, `/work/main-street-pub-grub`. Do not migrate those pages. CMS slugs must not collide with them.
 
-### Not in Maserpresent MVP
+### Not built in this repo (stay on maser-media)
 
 ```text
 /
-/work
 /about
 /contact
 ```
+
+`/work` listing and `/p` + `/work/[slug]` pages are maser-media routes that **consume** this renderer. Do not duplicate a marketing homepage here.
 
 ## Case study / identity anatomy
 
@@ -156,10 +159,10 @@ Block requirements:
 - Drag to reorder with keyboard-accessible alternatives (within a slide and across slides).
 - Duplicate, hide, delete with confirmation, and move between slides/chapters.
 - Autosave after a short debounce; Saving / Saved / Error status.
-- Desktop and mobile preview using the **same deck renderer** as `/present` and `/p/[slug]`.
+- Desktop and mobile preview using the **same deck renderer** as masermedia.co `/p/[slug]` and `/work/[slug]`.
 - Every media item requires alt text or an explicit decorative flag.
 - Constrained variants. No free-position canvas in MVP.
-- Hidden blocks do not appear in preview, `/present`, or `/p/[slug]`.
+- Hidden blocks do not appear in preview, review, or published output.
 
 Validate `content` and `style` with a discriminated Zod/TypeScript schema keyed by block type.
 
@@ -187,10 +190,11 @@ Navigation is the deck chrome in [presentation-ux.md](./presentation-ux.md). Mob
 
 ## Publish and edit rules
 
-- `status = published` is what `https://masermedia.co/p/[slug]` reads (live row, no snapshot).
-- To change a published project without showing mid-edit work: set status to `draft` or `review` (the public URL 404s), edit, then publish again. There is no previous public version to roll back to.
-- Private `/present/[token]` links continue to work on draft and review projects while they remain active, unexpired, and unrevoked.
-- Drafts and review links use `noindex, nofollow` and are excluded from any sitemap.
+- `draft` — studio preview only. masermedia.co 404s.
+- `review` — private client slug `https://masermedia.co/p/[slug]` (`noindex`). Not listed on Work. Live rows: studio edits appear for the client.
+- `published` — public `https://masermedia.co/work/[slug]`, listed on `/work`. `/p/[slug]` redirects here. To revise without showing mid-edit on Work, set status back to `review` (Work 404s; private slug works again). No snapshot rollback.
+- Optional `/present/[token]` on the studio host is extra-secret/preview, not the client destination.
+- Drafts use `noindex, nofollow` and are excluded from sitemaps. Review pages are `noindex`. Published Work pages may be indexed.
 
 ## Seed project
 
@@ -208,9 +212,9 @@ Seed media is checked into this repo (clearly licensed local files) with meaning
 
 ## Non-goals (MVP)
 
-- Replacing masermedia.co marketing pages or the current `/work` index.
-- Migrating Helm or Main Street case pages into Maserpresent.
-- Inquiry capture, related-work rails, or a Maserpresent-owned contact page.
+- Replacing masermedia.co homepage, About, or Contact.
+- Migrating Helm or Main Street file-route pages into Maserpresent.
+- Inquiry capture inside this app (use existing masermedia.co contact).
 - ZIP bundles of assets.
 - Rate limiting (known limitation — see architecture).
 - Published snapshots / rollback of a previous public cut.
@@ -219,6 +223,6 @@ Seed media is checked into this repo (clearly licensed local files) with meaning
 
 ## Definition of done (MVP)
 
-A studio editor can create a client, upload media (including project fonts), assemble a coherent presentation from chapters, slides, and structured blocks, preview the deck at multiple sizes, share a private Maserpresent link with selected individual downloads, publish an unlisted `https://masermedia.co/p/[slug]` page, and unpublish to edit without leaking drafts to that URL. A client can move through slides with arrows, swipe, and section tabs, with the active tab matching the current chapter. The Northline seed demonstrates the complete block set. The experience must be secure enough for private review, accessible, responsive, and visually strong.
+A studio editor can create a client, upload media (including project fonts), assemble a coherent presentation from chapters, slides, and structured blocks, preview the deck in studio, share a **private masermedia.co `/p/[slug]`** with the client team, keep editing while they review, then **publish to Work** at `/work/[slug]`. A client can move through slides with arrows, swipe, and section tabs, with the active tab matching the current chapter. The Northline seed demonstrates the complete block set. The experience must be secure enough for private review, accessible, responsive, and visually strong.
 
-Phase-by-phase checklist: [build-status.md](./build-status.md). Architecture: [architecture.md](./architecture.md). Presentation chrome: [presentation-ux.md](./presentation-ux.md).
+Phase-by-phase checklist: [build-status.md](./build-status.md). Architecture: [architecture.md](./architecture.md). Presentation chrome: [presentation-ux.md](./presentation-ux.md). Hosting: [0004-hosting-and-visibility.md](./decisions/0004-hosting-and-visibility.md).

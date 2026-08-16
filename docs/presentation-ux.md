@@ -1,6 +1,6 @@
 # Maserpresent — Client presentation UX
 
-Source of truth for `/present/[token]`, studio preview, and later `https://masermedia.co/p/[slug]`. Companion ADRs: [0003-presentation-chrome.md](./decisions/0003-presentation-chrome.md).
+Source of truth for studio preview, optional `/present/[token]`, and masermedia.co `/p/[slug]` (review) plus `/work/[slug]` (published). Companion ADRs: [0003-presentation-chrome.md](./decisions/0003-presentation-chrome.md), [0004-hosting-and-visibility.md](./decisions/0004-hosting-and-visibility.md).
 
 Figma (first slide, 16:9): [Untitled, node 1:2](https://www.figma.com/design/VvdoL70x1fU36JZ3rmh0W7/Untitled?node-id=1-2) — `fileKey` `VvdoL70x1fU36JZ3rmh0W7`.
 
@@ -77,7 +77,7 @@ Case studies may use Context, Challenge, System, Applications, Outcomes, Credits
 
 ## Assets route
 
-`/present/[token]/assets` is a library, not a slide. Keep the same bottom identity (studio mark / exit) but do not fake the five Figma tabs as asset filters. Asset filters stay kind/tag controls. A control should return the viewer to the current slide.
+`/p/[slug]/assets` (and `/work/[slug]/assets` if downloads stay allowed after publish) is a library, not a slide. Keep the same bottom identity (studio mark / exit) but do not fake the five Figma tabs as asset filters. Asset filters stay kind/tag controls. A control should return the viewer to the current slide.
 
 ## Out of chrome
 
@@ -93,4 +93,4 @@ Case studies may use Context, Challenge, System, Applications, Outcomes, Credits
 | 1 | Static shell: white stage, bottom bar with placeholder tabs, next arrow, tokens. No data. |
 | 5 | Authoring: chapters as tabs, slides inside chapters, preview uses the same chrome. |
 | 6 | Live renderer: arrows, swipe, keyboard, active/hover/focus tab states, reduced motion, three layout modes *per slide*. |
-| 7 | `/present/[token]` wired to share links; same chrome on published `/p/[slug]` when maser-media consumes the renderer. |
+| 7 | `/p/[slug]` for review and `/work/[slug]` for published, via maser-media + this renderer. Optional studio `/present/[token]`. |

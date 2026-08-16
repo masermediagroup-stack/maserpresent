@@ -1,6 +1,6 @@
 # Client presentation is a 16:9 deck with section tabs
 
-Clients opening a Maserpresent link see a full-bleed slide deck: the work fills the stage, circular prev/next controls sit on the left and right edges, and a dark bottom bar of chapter tabs jumps to the first slide of a section. This replaces a long-scroll article as the default `/present` and `/p/[slug]` chrome.
+Clients opening a Maserpresent link on masermedia.co see a full-bleed slide deck: the work fills the stage, circular prev/next controls sit on the left and right edges, and a dark bottom bar of chapter tabs jumps to the first slide of a section. This replaces a long-scroll article as the default `/p/[slug]` and `/work/[slug]` chrome.
 
 Status: accepted (2026-08-16)
 
@@ -20,7 +20,7 @@ The author asked for: arrows on both sides after the first slide; tab click jump
 
 ## Decision
 
-1. **Deck is the client chrome** for `/present/[token]`, `/present/[token]/assets` (assets may use a related layout), studio preview, and later masermedia.co `/p/[slug]`.
+1. **Deck is the client chrome** for studio preview, masermedia.co `/p/[slug]` (review), `/work/[slug]` (published), and optional studio `/present/[token]`.
 2. **Chapters = bottom tabs.** Editors name them. The Figma labels are a brand-identity starter set, not a hard-coded product IA.
 3. **Slides = pages inside a chapter.** Left/right/swipe/keyboard move between slides in presentation order. Tab click goes to slide 1 of that chapter.
 4. **Active tab:** darker background than the rest of the bar. **Hover (pointer devices):** underline the tab label. Keyboard focus remains visible independently.

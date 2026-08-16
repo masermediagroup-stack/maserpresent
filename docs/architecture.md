@@ -1,8 +1,8 @@
 # Maserpresent — Architecture
 
-Evidence-based plan for **this repository** (`masermediagroup-stack/maserpresent`), with a thin unlisted route on the existing [maser-media](https://github.com/masermediagroup-stack/maser-media) site.
+Evidence-based plan for **this repository** (`masermediagroup-stack/maserpresent`), with private `/p/[slug]` and public `/work/[slug]` on the existing [maser-media](https://github.com/masermediagroup-stack/maser-media) site.
 
-Companion docs: [product-brief.md](./product-brief.md), [presentation-ux.md](./presentation-ux.md), [decisions/0001-foundation.md](./decisions/0001-foundation.md), [decisions/0002-product-name.md](./decisions/0002-product-name.md), [decisions/0003-presentation-chrome.md](./decisions/0003-presentation-chrome.md), [build-status.md](./build-status.md).
+Companion docs: [product-brief.md](./product-brief.md), [presentation-ux.md](./presentation-ux.md), [decisions/0001-foundation.md](./decisions/0001-foundation.md), [decisions/0002-product-name.md](./decisions/0002-product-name.md), [decisions/0003-presentation-chrome.md](./decisions/0003-presentation-chrome.md), [decisions/0004-hosting-and-visibility.md](./decisions/0004-hosting-and-visibility.md), [build-status.md](./build-status.md).
 
 ## Repository audit (maserpresent, 2026-08-16)
 
@@ -32,24 +32,24 @@ Tailwind 4 + shadcn `base-nova` + `@base-ui/react`, `cn()`, compact studio densi
 ## System shape
 
 ```text
-┌─────────────────────────────┐     ┌──────────────────────────┐
-│ Maserpresent (this repo)    │     │ maser-media (existing)   │
-│ studioOrigin (Vercel)       │     │ https://masermedia.co    │
-│ /studio /auth /present      │     │ / /work /about /contact  │
-│ @maser/maserpresent-renderer│     │ /p/[slug]  (thin route)  │
-└─────────────┬───────────────┘     └────────────┬─────────────┘
-              │                                  │
-              └──────────────┬───────────────────┘
+┌─────────────────────────────┐     ┌──────────────────────────────┐
+│ Maserpresent (this repo)    │     │ maser-media (existing)       │
+│ studioOrigin (Vercel)       │     │ https://masermedia.co        │
+│ /studio /auth /preview      │     │ / /work /about /contact      │
+│ @maser/maserpresent-renderer│     │ /p/[slug]     review         │
+└─────────────┬───────────────┘     │ /work/[slug]  published      │
+              │                     └──────────────┬───────────────┘
+              └──────────────┬─────────────────────┘
                              ▼
                   Supabase (one project)
                   Postgres + Auth + Storage
 ```
 
-- This app owns authoring, magic-link sessions, private review, uploads, and the renderer package.
-- maser-media owns the agency marketing site and adds a **thin** `/p/[slug]` page that reads **published** live rows and renders with `@maser/maserpresent-renderer`.
+- This app owns authoring, magic-link sessions, uploads, preview, and the renderer package.
+- maser-media owns the agency site and serves the client deck: `/p/[slug]` while `review`, `/work/[slug]` (and Work index) while `published`.
 - Both apps use the **same** Supabase project. Never ship the service-role key to either browser bundle.
 
-This Phase 0 does **not** edit maser-media. The `/p/[slug]` route is a later PR in that repo, after the renderer package exists.
+This Phase 0 does **not** edit maser-media. Those routes are a later PR in that repo, after the renderer package exists.
 
 ## Folder structure (Phase 1 will create the app)
 
@@ -93,14 +93,17 @@ No `(public)` marketing route group in MVP.
 
 | Surface | Host | Routes | Who |
 | --- | --- | --- | --- |
-| Studio | `studioOrigin` (Vercel `*.vercel.app` in MVP) | `/studio/*`, `/auth/*` | admin, editor |
-| Private review | `studioOrigin` | `/present/[token]`, `/present/[token]/assets` | token holder |
-| Unlisted published | `https://masermedia.co` | `/p/[slug]` | anyone with the URL, only if `published` |
-| Agency marketing | `https://masermedia.co` | `/`, `/work`, `/about`, `/contact` | unchanged; not this app |
+| Studio + preview | `studioOrigin` (Vercel in MVP) | `/studio/*`, `/auth/*`, optional `/present/[token]` | admin, editor; optional extra-secret link |
+| Private client slug | `https://masermedia.co` | `/p/[slug]`, `/p/[slug]/assets` | client team while `status = review` |
+| Public Work piece | `https://masermedia.co` | `/work/[slug]` | anyone, only if `published` |
+| Work index | `https://masermedia.co` | `/work` | includes published CMS projects plus existing file-route pieces |
+| Agency marketing | `https://masermedia.co` | `/`, `/about`, `/contact` | unchanged; not this app |
 
 Product config stores `publicOrigin` (`https://masermedia.co`) and `studioOrigin` (Vercel URL). Custom studio domain is post-MVP.
 
-Private tokens must **never** be rewritten through masermedia.co (CDN, cache, and draft-leak risk).
+**Drafts never render on masermedia.co.** Do not proxy `/present/[token]` through that host (CDN, cache, and draft-leak risk). The private **slug** on `/p/` is an intentional review surface, not a draft dump.
+
+See [0004-hosting-and-visibility.md](./decisions/0004-hosting-and-visibility.md).
 
 ## Authentication and authorization
 
@@ -116,7 +119,7 @@ Implement migrations, generated database types, timestamps, indexes, foreign key
 
 - `profiles` — `role`: admin, editor.
 - `clients` — as original spec.
-- `projects` — `status`: draft, review, published, archived; `visibility` retained for future use; unlisted `/p/[slug]` only serves `status = published`.
+- `projects` — `status`: draft, review, published, archived. `visibility` may mirror that (`private` while review, `public` while published) but **status is the source of truth** for which masermedia.co route serves the row.
 - `chapters` — bottom **tabs**. `unique(project_id, slug)`. `is_visible` hides a chapter from the deck and the tab bar.
 - `slides` — **pages** inside a chapter. `chapter_id`, `position`, `is_visible`. Deck order is chapters by `position`, then slides by `position`.
 - `blocks` — `slide_id` FK; JSON `content`/`style` validated by Zod, never spread untyped.
@@ -131,13 +134,18 @@ Implement migrations, generated database types, timestamps, indexes, foreign key
 - `inquiries` — use existing masermedia.co contact form.
 - Rate-limit tables — none (known limitation).
 
-Publish rule: `/p/[slug]` queries `projects` where `slug = $slug AND status = 'published'`, then visible chapters/slides/blocks. If the row is not published, 404. Autosave while `draft`/`review` cannot appear on masermedia.co. Autosave while `published` **would** appear; the product rule is: editors must unpublish before editing (studio UI must block or warn and require the status flip).
+Publish rule (maser-media, later):
+
+- `/p/[slug]` serves the project only when `status = review` (optional passcode). `noindex`.
+- `/work/[slug]` serves the project only when `status = published`. Listed on `/work`. `/p/[slug]` 301s here.
+- Any other status → `notFound()`.
+- Autosave while `draft` cannot appear on masermedia.co. Autosave while `review` **does** appear on `/p/[slug]`. Autosave while `published` **does** appear on `/work/[slug]`; the studio UI must warn and prefer flipping back to `review` before large edits.
 
 ## Storage
 
 - Supabase Storage for MVP. `lib/storage/` is an adapter so Cloudinary can be added later without rewriting callers.
 - Private originals: signed URLs. No guessable public URLs for drafts or source files.
-- Public delivery on `/p/[slug]` only for media that belongs to a published project (derivatives or signed public objects — decide in Phase 4; default to not exposing the original bucket publicly).
+- Public delivery on `/work/[slug]` (and signed private delivery on `/p/[slug]` during review) only for media that belongs to that project. Default to not exposing the original bucket publicly. Draft originals stay studio-only.
 - Validate file type and size on client and server. Reject executables and unexpected formats.
 - Font uploads: `woff2` (and `woff` if needed), project-scoped `@font-face`, fallback to studio UI font on failure.
 - Failed uploads must not leave a misleading database row.
@@ -148,8 +156,8 @@ Publish rule: `/p/[slug]` queries `projects` where `slug = $slug AND status = 'p
 `@maser/maserpresent-renderer` is the single composition for:
 
 1. Studio desktop/mobile preview
-2. `/present/[token]`
-3. masermedia.co `/p/[slug]`
+2. Optional studio-host `/present/[token]`
+3. masermedia.co `/p/[slug]` (review) and `/work/[slug]` (published)
 
 It consumes typed slide/block JSON + project theme tokens + deck chrome (stage, arrows, tab bar). It must not import studio chrome, lab tokens, or Next.js-only studio code. maser-media depends on this package; it does not duplicate block renderers.
 
@@ -160,14 +168,15 @@ Deck behavior is specified in [presentation-ux.md](./presentation-ux.md).
 ## Security and privacy
 
 - Service-role credentials stay server-side (this app’s server and, if needed, maser-media server components only).
-- Draft and review: `noindex, nofollow`; excluded from sitemaps.
-- `/p/[slug]` is unlisted (not in `/work`). Still set canonical + robots according to studio preference in Phase 7; default `noindex` for unlisted pages unless explicitly opted into indexing later.
+- Draft: never on masermedia.co.
+- Review `/p/[slug]`: `noindex, nofollow`; excluded from sitemaps and `/work`.
+- Published `/work/[slug]`: listed on Work; may be indexed. Canonical is `/work/[slug]`.
 - Sanitize TipTap HTML and approved embeds.
 - **Rate limits are deferred.** Magic-link and passcode attempts are unprotected in MVP. Treat this as a launch risk; add Postgres or Upstash limits before any wide client sharing.
 
 ## Performance and accessibility budgets
 
-Carry these onto `/present` and `/p/[slug]`:
+Carry these onto `/p/[slug]` and `/work/[slug]`:
 
 - Lighthouse 90+ on a representative published page where it can be measured.
 - LCP ≤ 2.5s, INP ≤ 200ms, CLS ≤ 0.1 at p75 when field data exists.
@@ -185,8 +194,8 @@ Carry these onto `/present` and `/p/[slug]`:
 | Unit | Vitest | Zod block schemas, slug rules, publish-status helpers, token hashing, deck order (chapter→slide) |
 | Component | Vitest + RTL | Studio primitives; tab active/hover/focus; arrow visibility on first/last slide |
 | Authz | SQL / integration | RLS: anonymous cannot read drafts or private assets; editor cannot escalate to admin |
-| E2E | Playwright | Magic-link (stubbed), project create, story edit, preview, share-link, tab jump, next/prev, unpublish 404 vs publish |
-| E2E (later) | maser-media | `/p/[slug]` published vs 404 |
+| E2E | Playwright | Magic-link (stubbed), project create, story edit, preview, review-status private slug, publish to Work |
+| E2E (later) | maser-media | `/p/[slug]` only when review; `/work/[slug]` only when published; Work index includes published CMS rows |
 
 Phase 0: no app, so no lint/typecheck/build of the product.
 
@@ -246,6 +255,9 @@ No secrets in git. Seed two users via env-provided emails, not committed passwor
 ## maser-media integration (later PR, not this repo)
 
 1. Depend on `@maser/maserpresent-renderer`.
-2. Add `app/p/[slug]/page.tsx`: if project not published → `notFound()`.
-3. Do not add studio routes there.
-4. Leave `/work/*` file routes in place. Never reuse those slugs for Maserpresent projects (enforce in slug validation with a denylist: `helm-in-house-saas`, `main-street-pub-grub`, and `work` itself).
+2. `app/p/[slug]/page.tsx`: serve only `status = review` (passcode if set); else `notFound()`. `noindex`.
+3. `app/work/[slug]/page.tsx`: serve CMS projects only when `status = published`. Keep existing **file** routes for Helm and Main Street.
+4. `/work` index: existing hardcoded pieces plus published CMS projects.
+5. After publish, `/p/[slug]` redirects to `/work/[slug]`.
+6. Do not add studio routes on maser-media.
+7. Deny CMS slugs `helm-in-house-saas`, `main-street-pub-grub`, and `work`.
