@@ -1,6 +1,6 @@
 # Maserpresent — Build status
 
-Phase-by-phase checklist. **Phase 0 is done in this repo** (2026-08-16). Phases 1–9 stay pending until each is approved. Do not start a phase until the previous one is approved.
+Phase-by-phase checklist. **Phase 0–1 are done in this repo** (2026-08-16). Phases 2–9 stay pending until each is approved. Do not start a phase until the previous one is approved.
 
 Work phase by phase. At the end of each implementation phase: lint, typecheck, tests, production build, desktop and mobile of the primary flow, files changed, decisions, limitations, AC confirmation — then stop.
 
@@ -36,19 +36,23 @@ Full original prompt context is retained: Phase 1 foundation → 2 Supabase/auth
 
 ## Phase 1 — Foundation and design system
 
-**Status: pending**
+**Status: complete** (2026-08-16)
 
-- [ ] Initialize Next.js, TypeScript, Tailwind, lint, format, Vitest, Playwright
-- [ ] Route groups: `(auth)`, `(studio)`, `(presentation)` — **no public marketing group**
-- [ ] Semantic tokens for studio UI and project-scoped presentation themes, including deck tokens (stage, bar `#222`, tab active darker, arrow circle)
-- [ ] Primitives: Button, IconButton, Input, Textarea, Select, Checkbox, Switch, Dialog, Dropdown, Tabs, Tooltip, Toast, EmptyState, Skeleton, StatusBadge
-- [ ] Studio shell: compact sidebar, top bar, placeholder routes
-- [ ] Presentation shell placeholder: 16:9 stage, bottom tab bar, next arrow (static copy from Figma: Typography / Logo / Brand Design / Do’s and Don’ts / Look Book)
-- [ ] No Storybook; `/studio/design-system` in development
-- [ ] Scaffold `@maser/maserpresent-renderer` package (theme + deck chrome shell is enough)
-- [ ] Product name in `src/config/product.ts`
+- [x] Initialize Next.js, TypeScript, Tailwind, lint, format, Vitest, Playwright
+- [x] Route groups: `(auth)`, `(studio)`, `(presentation)` — **no public marketing group**
+- [x] Semantic tokens for studio UI and project-scoped presentation themes, including deck tokens (stage, bar `#222`, tab active darker, arrow circle)
+- [x] Primitives: Button, IconButton, Input, Textarea, Select, Checkbox, Switch, Dialog, Dropdown, Tabs, Tooltip, Toast, EmptyState, Skeleton, StatusBadge
+- [x] Studio shell: compact sidebar, top bar, placeholder routes
+- [x] Presentation shell placeholder: 16:9 stage, bottom tab bar, next arrow (static copy from Figma: Typography / Logo / Brand Design / Do’s and Don’ts / Look Book)
+- [x] No Storybook; `/studio/design-system` in development
+- [x] Scaffold `@maser/maserpresent-renderer` package (theme + deck chrome shell is enough)
+- [x] Product name in `src/config/product.ts`
 
 **Not in this phase:** maser-media `/p/[slug]`, Supabase, live slide data, swipe.
+
+**Verification:** `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm build`, `pnpm test:e2e` — all pass.
+
+**Next:** Approve **Phase 2** (Supabase schema, authentication, and authorization).
 
 ---
 

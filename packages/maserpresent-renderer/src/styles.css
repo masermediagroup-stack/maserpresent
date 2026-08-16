@@ -1,0 +1,125 @@
+.maserpresent-deck {
+  --deck-stage-bg: #ffffff;
+  --deck-stage-fg: #151515;
+  --deck-bar-bg: #222222;
+  --deck-bar-height: 92px;
+  --deck-tab-fg: #fafafa;
+  --deck-tab-active-bg: #151515;
+  --deck-arrow-size: 52px;
+  --deck-arrow-bg: #e8e8e8;
+  --deck-arrow-fg: #151515;
+
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 100%;
+  margin-inline: auto;
+  background: var(--deck-bar-bg);
+}
+
+.maserpresent-deck__frame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: var(--deck-stage-bg);
+  color: var(--deck-stage-fg);
+  overflow: hidden;
+}
+
+.maserpresent-deck__stage {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.maserpresent-deck__arrow {
+  position: absolute;
+  top: 50%;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--deck-arrow-size);
+  height: var(--deck-arrow-size);
+  min-width: 44px;
+  min-height: 44px;
+  border: none;
+  border-radius: 9999px;
+  background: var(--deck-arrow-bg);
+  color: var(--deck-arrow-fg);
+  cursor: pointer;
+  transform: translateY(-50%);
+  transition: opacity 150ms;
+}
+
+.maserpresent-deck__arrow:hover {
+  opacity: 0.9;
+}
+
+.maserpresent-deck__arrow:focus-visible {
+  outline: 2px solid var(--deck-stage-fg);
+  outline-offset: 2px;
+}
+
+.maserpresent-deck__arrow--previous {
+  left: 1.5rem;
+}
+
+.maserpresent-deck__arrow--next {
+  right: 1.5rem;
+}
+
+.maserpresent-deck__tabbar {
+  display: flex;
+  width: 100%;
+  height: var(--deck-bar-height);
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.maserpresent-deck__tab {
+  flex: 1 0 0;
+  min-width: 8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-inline: 1rem;
+  border: none;
+  border-right: 1px solid color-mix(in srgb, var(--deck-tab-fg) 12%, transparent);
+  background: var(--deck-bar-bg);
+  color: var(--deck-tab-fg);
+  font-family: inherit;
+  font-size: 1rem;
+  line-height: 1.25;
+  text-align: center;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.maserpresent-deck__tab:last-child {
+  border-right: none;
+}
+
+.maserpresent-deck__tab[data-active="true"] {
+  background: var(--deck-tab-active-bg);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .maserpresent-deck__tab:hover .maserpresent-deck__tab-label {
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+}
+
+.maserpresent-deck__tab:focus-visible {
+  outline: 2px solid var(--deck-tab-fg);
+  outline-offset: -2px;
+  z-index: 1;
+}
+
+.maserpresent-deck__tab-label {
+  display: block;
+  white-space: nowrap;
+}

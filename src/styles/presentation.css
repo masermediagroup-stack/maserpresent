@@ -1,0 +1,18 @@
+/* Presentation deck tokens — imported in presentation routes only. */
+
+.presentation-root {
+  --deck-stage-bg: #ffffff;
+  --deck-stage-fg: #151515;
+  --deck-bar-bg: #222222;
+  --deck-bar-height: 92px;
+  --deck-tab-fg: #fafafa;
+  --deck-tab-active-bg: #151515;
+  --deck-arrow-size: 52px;
+  --deck-arrow-bg: #e8e8e8;
+  --deck-arrow-fg: #151515;
+  --deck-aspect-ratio: 16 / 9;
+
+  min-height: 100dvh;
+  background: oklch(0.12 0 0);
+  color: var(--deck-stage-fg);
+}
